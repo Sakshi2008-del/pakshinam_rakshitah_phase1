@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>पक्षिणाम् रक्षितः</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+:root{
+--bg:#e8f5e9;
+--primary:#2e7d32;
+--secondary:#43a047;
+--accent:#66bb6a;
+--glow:#00c853;
+--card:#ffffff;
+--text:#1b3a2b;
+}
+
+body{
+margin:0;
+font-family:'Segoe UI',sans-serif;
+background:linear-gradient(135deg,var(--bg),#d0f0dc);
+color:var(--text);
+min-height:100vh;
+display:flex;
+flex-direction:column;
+}
+
+header{
+background:linear-gradient(90deg,var(--primary),var(--secondary));
+padding:25px;
+text-align:center;
+font-size:28px;
+font-weight:bold;
+color:white;
+box-shadow:0 4px 12px rgba(0,0,0,0.2);
+}
+
+nav{
+text-align:center;
+padding:15px;
+background:var(--primary);
+}
+
+button{
+padding:10px 22px;
+margin:8px;
+background:var(--secondary);
+color:white;
+border:none;
+border-radius:8px;
+cursor:pointer;
+transition:.3s;
+font-weight:600;
+}
+
+button:hover{
+background:var(--accent);
+transform:scale(1.05);
+box-shadow:0 0 10px var(--glow);
+}
+
+.section{
+display:none;
+padding:40px;
+text-align:center;
+flex:1;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+gap:20px;
+}
+
+.card{
+background:var(--card);
+padding:18px;
+border-radius:12px;
+box-shadow:0 5px 15px rgba(0,0,0,0.1);
+}
+
+.card img{
+width:150px;
+height:110px;
+object-fit:cover;
+border-radius:8px;
+margin-bottom:8px;
+border:2px solid var(--accent);
+}
+
+.metric{
+font-size:18px;
+margin:6px 0;
+color:var(--primary);
+}
+
+canvas{
+background:white;
+border-radius:12px;
+padding:15px;
+}
+
+.center-btn{
+display:flex;
+justify-content:center;
+margin-top:25px;
+}
+
+/* BIG GENERATE BUTTON */
+.big-btn{
+padding:18px 45px;
+font-size:20px;
+background:linear-gradient(90deg,var(--secondary),var(--accent));
+border-radius:12px;
+color:white;
+box-shadow:0 4px 12px rgba(0,0,0,0.2);
+}
+
+.big-btn:hover{
+transform:scale(1.08);
+}
+
+/* STICKY FOOTER */
+footer{
+text-align:center;
+padding:18px;
+background:#c8e6c9;
+font-size:14px;
+margin-top:auto;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+पक्षिणाम् रक्षितः : Guardians of Ecosystem 🌿
+</header>
+
+<nav>
+<button onclick="showPage('dashboard')">Radiation Dashboard</button>
+<button onclick="showPage('ml')">ML Prediction</button>
+<button onclick="showPage('graph')">Graph Analysis</button>
+</nav>
+
+<!-- Dashboard -->
+<div id="dashboard" class="section">
+<h2>Live Radiation Monitoring</h2>
+
+<div id="metrics"></div>
+
+<div class="grid" id="birdCards"></div>
+
+<div class="center-btn">
+<button class="big-btn" onclick="loadRadiation()">Generate Radiation</button>
+</div>
+</div>
+
+<!-- ML -->
+<div id="ml" class="section">
+<h2>Machine Learning Prediction</h2>
+<div id="mlData"></div>
+<div class="center-btn">
+<button onclick="loadPrediction()">Predict Future Radiation</button>
+</div>
+</div>
+
+<!-- Graph -->
+<div id="graph" class="section">
+<h2>Bird Risk Graph</h2>
+<canvas id="riskChart"></canvas>
+</div>
+
+<footer>
+Developed By Team: 
+<b style="color:#2e7d32;">
+SHRUTI PANDEY | HARSHIT YADAV | ARNOLD MOSSES | SAKSHI SRIVASTAVA
+</b>
+<br>
+© 2026 Environmental Radiation Monitoring Project
+</footer>
+
+<script>
+let chart;
+
+function showPage(id){
+document.querySelectorAll('.section').forEach(s=>s.style.display='none');
+document.getElementById(id).style.display='block';
+}
+
+function loadRadiation(){
+fetch('/radiation')
+.then(r=>r.json())
+.then(d=>{
+document.getElementById('metrics').innerHTML=`
+<div class="metric">Solar: ${d.solar}</div>
+<div class="metric">Human: ${d.human}</div>
+<div class="metric"><b>Total RSS: ${d.rss}</b></div>`;
+
+let names=[],risks=[],cards="";
+d.birds.forEach(b=>{
+names.push(b.name);
+risks.push(b.risk);
+cards+=`
+<div class="card">
+<img src="${b.image}">
+<h3>${b.name}</h3>
+<p>Risk: ${b.risk}</p>
+<p>${b.problem}</p>
+<p><i>${b.precaution}</i></p>
+</div>`;
+});
+document.getElementById('birdCards').innerHTML=cards;
+generateGraph(names,risks);
+});
+}
+
+function loadPrediction(){
+fetch('/predict')
+.then(r=>r.json())
+.then(d=>{
+document.getElementById('mlData').innerHTML=`
+<p>Past: ${d.past}</p>
+<p>Present: ${d.present}</p>
+<p>+1hr: ${d.future1}</p>
+<p>+2hr: ${d.future2}</p>`;
+});
+}
+
+function generateGraph(names,risks){
+const ctx=document.getElementById('riskChart');
+if(chart) chart.destroy();
+chart=new Chart(ctx,{
+type:'bar',
+data:{labels:names,datasets:[{label:'Risk Levels',data:risks}]}
+});
+}
+
+showPage('dashboard');
+</script>
+
+</body>
+</html>
